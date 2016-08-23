@@ -6,11 +6,17 @@
 
 .g4u-desktop {
   .g4u-linkgenerator {
+    position: absolute;
+
     .g4u-control-mainbutton {
       .buttonSquaredWithIcon(@g4u-linkgenerator-link-icon; @g4u-desktop-button-size; @g4u-desktop-button-size);
     }
 
     .g4u-window-content {
+      .g4u-linkgenerator {
+        position: static;
+      }
+
       h3 {
         font-weight: bold;
         text-transform: uppercase;
@@ -50,6 +56,12 @@
         margin-top: 2 * @g4u-desktop-padding;
         margin-right: 2 * @g4u-desktop-padding;
       }
+    }
+  }
+
+  .g4u-window-content {
+    .g4u-linkgenerator {
+      position: static;
     }
   }
 }
