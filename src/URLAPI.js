@@ -3,7 +3,7 @@ import $ from 'jquery'
 
 import {GroupLayer} from 'guide4you/src/layers/GroupLayer'
 
-import Debug from 'guide4you/src/Debug'
+import {Debug} from 'guide4you/src/Debug'
 import {restoreText} from 'guide4you/src/xssprotection'
 
 /**

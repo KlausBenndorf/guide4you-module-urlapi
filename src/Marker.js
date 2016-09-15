@@ -102,9 +102,7 @@ export class Marker {
       } else {
         featurePopup.setVisible(false)
       }
-    }
 
-    if (featurePopup) {
       featurePopup.update()
     }
   }
