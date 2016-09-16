@@ -17,7 +17,7 @@ import '../less/linkgeneratorbutton.less'
  * Shows a window which contains a link to the current location of the map. Optionally a marker can be positioned on the
  * map by the user and a text for this marker can be added.
  */
-export default class LinkGeneratorButton extends Control {
+export class LinkGeneratorButton extends Control {
   /**
    * @param {LinkGeneratorButtonOptions} options
    */
