@@ -17,10 +17,10 @@ function getMapCenter () {
 }
 
 test.describe('URLAPI', function () {
+  this.timeout(config.mochaTimeout)
   let driver
 
   test.before(function () {
-    this.timeout(config.mochaTimeout)
     driver = phantomDriver()
     driver.manage().window().setSize(1200, 800)
     driver.manage().timeouts().implicitlyWait(config.seleniumTimeout)
@@ -93,28 +93,26 @@ test.describe('URLAPI', function () {
 
   test.it('[marklat, marklon, marktext] should set the marker active if either marklat, marklon or marktext' +
     ' are set to something', function (done) {
-    driver.get(config.testClient + '?marktext= text ').then(() => {
-      return waitUntilMapReady(driver)
-    }).then(() => {
+    function getMarkerActive () {
       return driver.executeScript('return map.get("marker").getActive();')
-    }).then(active => {
-      return assert(active).equalTo(true)
+    }
+
+    driver.get(config.testClient + '?marktext= text ').then(
+      waitUntilMapReady(driver)
+    ).then(() => {
+      return assert(getMarkerActive()).equalTo(true)
     }).then(() => {
       // Ist das so gewollt? Sollte das nicht analog zu lat/lon nur funktionieren, wenn beide gesetzt sind?
-      return driver.get(config.testClient + '?marklon=' + config.testVisibleCoordinate[0]).then(() => {
-        return waitUntilMapReady(driver)
-      }).then(() => {
-        return driver.executeScript('return map.get("marker").getActive();')
-      }).then(active => {
-        return assert(active).equalTo(true)
+      return driver.get(config.testClient + '?marklon=' + config.testVisibleCoordinate[0]).then(
+        waitUntilMapReady(driver)
+      ).then(() => {
+        return assert(getMarkerActive()).equalTo(true)
       })
     }).then(() => {
-      return driver.get(config.testClient + '?marklat=' + config.testVisibleCoordinate[1]).then(() => {
-        return waitUntilMapReady(driver)
-      }).then(() => {
-        return driver.executeScript('return map.get("marker").getActive();')
-      }).then(active => {
-        return assert(active).equalTo(true)
+      return driver.get(config.testClient + '?marklat=' + config.testVisibleCoordinate[1]).then(
+        waitUntilMapReady(driver)
+      ).then(() => {
+        return assert(getMarkerActive()).equalTo(true)
       })
     }).then(done)
   })
@@ -219,7 +217,6 @@ test.describe('URLAPI', function () {
 
   test.it('[clsbtn] should not have a close button if the parameter "clsbtn" was not set or not set to true ' +
     '(not neccessarily visible)', function (done) {
-    this.timeout(config.mochaTimeout * 2)
     driver.get(config.testClient + '?clsbtn=false').then(() => {
       return waitUntilMapReady(driver)
     }).then(() => {

@@ -14,7 +14,7 @@ import Control from 'guide4you/src/controls/Control'
 /**
  * Generates links optionally wrapped in iframe- or a-tags that can be copied or clicked by the user.
  */
-export default class LinkGenerator extends Control {
+export class LinkGenerator extends Control {
   /**
    * @param {LinkGeneratorOptions} options
    */

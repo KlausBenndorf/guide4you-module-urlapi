@@ -12,7 +12,7 @@ import '../less/closewindowbutton.less'
 /**
  * Close the window. This only works if the window was opened by javascript.
  */
-export default class CloseWindowButton extends Control {
+export class CloseWindowButton extends Control {
   /**
    * @param {g4uControlOptions} options
    */
