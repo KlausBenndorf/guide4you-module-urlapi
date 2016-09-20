@@ -1,4 +1,4 @@
-import { getConfig } from 'guide4you/src/utilities'
+import {getConfig} from 'guide4you/src/utilities'
 
 import {Module} from 'guide4you/src/Module'
 import {URLAPI} from './URLAPI'
