@@ -38,7 +38,18 @@ import 'file?name=proxy/AjaxProxy.[ext]!guide4you-proxy/LICENSE.txt'
 import {URLAPIModule} from '../src/URLAPIModule'
 
 window.createG4U = function (target, clientConf = defaultClientConf, layerConf = defaultLayerConf) {
-  return createG4UInternal(target, clientConf, layerConf, [new URLAPIModule()])
+  return createG4UInternal(target, clientConf, layerConf, [new URLAPIModule(
+    /* {
+       moduleParameters': [
+        {
+          'keys': [ 'lorem', 'ipsum', 'dolor', 'sit', 'amet' ],
+          'setEvent': 'afterConfiguring',
+          'setToMap': (that) => { },
+          'getFromMap': (that) => { }
+        }
+      ]
+    } */
+  )])
 }
 
 export default window.createG4U
