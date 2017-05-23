@@ -17,12 +17,21 @@ import {CloseWindowButton} from './CloseWindowButton'
  * which can additionally let the user set the marker on the map and give it a text.
  */
 export class URLAPIModule extends Module {
+
+  constructor (options) {
+    super(options)
+    if (options && options.hasOwnProperty('moduleParameters')) {
+      this.moduleParameters_ = options.moduleParameters
+    } else {
+      this.moduleParameters_ = []
+    }
+  }
   /**
    * @param {G4UMap} map
    */
   setMap (map) {
     super.setMap(map)
-    map.set('urlApi', new URLAPI({ map: map }))
+    map.set('urlApi', new URLAPI({ map: map, moduleParameters: this.moduleParameters_ }))
   }
 
   /**
