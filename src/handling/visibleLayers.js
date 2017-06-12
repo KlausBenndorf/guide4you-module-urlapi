@@ -1,3 +1,4 @@
+import {Debug} from 'guide4you/src/Debug'
 
 export const visibleLayersParam = {
   keys: [ 'vislay' ],
@@ -9,6 +10,9 @@ export const visibleLayersParam = {
       for (let id of layerIds) {
         id = id.split('#')
         let layer = map.getLayerGroup().findLayer(l => l.get('id') !== undefined && l.get('id').toString() === id[0])
+        if (layer === undefined) {
+          Debug.warn(`it was tried to set a layer visible via urlapi that does not exist: id = ${id[0]}`)
+        }
         if (layer.getSource && layer.getSource().updateParams) {
           layer.getSource().updateParams({ LAYERS: id.slice(1) })
         }

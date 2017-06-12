@@ -1,4 +1,5 @@
 import {filterText} from 'guide4you/src/xssprotection'
+import {Debug} from 'guide4you/src/Debug'
 
 export class Query {
   constructor (possibleKeys, excluded) {
@@ -37,6 +38,20 @@ export class Query {
           }
         }
       }
+    }
+  }
+
+  addKey (key) {
+    if (this.parameterKeys_.indexOf(key) > -1) {
+      Debug.error('Key is already in use.')
+    } else if (key.toLowerCase() !== key) {
+      Debug.error('Key should be lowercase.')
+    }
+
+    let queryString = window.location.search
+    let match = queryString.match(new RegExp(key + '=(.*?)(&|$)', 'i'))
+    if (match) {
+      this.queryValues_[key] = match[1].split(',')
     }
   }
 
