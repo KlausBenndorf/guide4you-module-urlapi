@@ -12,20 +12,6 @@ export class Query {
 
     this.excluded_ = excluded
 
-    // some helper functions to be used in the parameter definitions
-
-    this.isSet = key => this.queryValues_.hasOwnProperty(key)
-
-    this.getSanitizedVal = key => filterText(this.queryValues_[key])
-
-    this.getInjectUnsafeVal = key => this.queryValues_[key]
-
-    this.isExcluded = key => (this.excluded_.indexOf(key) > -1)
-
-    this.isTrue = key => (this.isSet(key) && !!JSON.parse(this.getSanitizedVal(key)))
-
-    this.getArray = key => this.queryValues_[ key ].split(',')
-
     let keyValuePair
     let queryString = window.location.search
 
@@ -52,5 +38,31 @@ export class Query {
         }
       }
     }
+  }
+
+  // some helper functions to be used in the parameter definitions
+
+  isSet (key) {
+    return this.queryValues_.hasOwnProperty(key)
+  }
+
+  getSanitizedVal (key) {
+    return filterText(this.queryValues_[key])
+  }
+
+  getInjectUnsafeVal (key) {
+    return this.queryValues_[key]
+  }
+
+  isExcluded (key) {
+    return (this.excluded_.indexOf(key) > -1)
+  }
+
+  isTrue (key) {
+    return (this.isSet(key) && !!JSON.parse(this.getSanitizedVal(key)))
+  }
+
+  getArray (key) {
+    return this.queryValues_[ key ].split(',')
   }
 }

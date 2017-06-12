@@ -1,12 +1,12 @@
+import { assertRelativePath } from '../utilities'
+
 export const layerConfigurationFileParam = {
   keys: [ 'layconf' ],
   setEvent: 'beforeConfigLoad',
   setToMap: (map, query) => {
     if (query.isSet('layconf')) {
       let val = query.getInjectUnsafeVal('layconf').trim()
-      if (val.match(/^(?:[a-z]+:)?\/\//i)) {
-        throw new Error('The provided layconf parameter is absolute. Only relative paths are allowed.')
-      }
+      assertRelativePath(val)
       map.set('layerConfigFileName', val)
     }
   },
