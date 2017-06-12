@@ -21,7 +21,7 @@ module.exports = {
   },
   resolve: {
     alias: {
-      'lessConfig': path.join(baseDir, 'node_modules/guide4you/conf/clouds.less')
+      'lessConfig': 'node_modules/guide4you/conf/clouds.less'
     }
   },
   plugins: [
