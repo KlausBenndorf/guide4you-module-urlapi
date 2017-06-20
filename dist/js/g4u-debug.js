@@ -6118,7 +6118,7 @@ var SourceServerVector = exports.SourceServerVector = function (_ol$source$Vecto
       }
 
       if (!this.cache_ || this.localised_) {
-        (0, _utilities.addParamToURL)(url, Math.random().toString(36).substring(7));
+        url = (0, _utilities.addParamToURL)(url, Math.random().toString(36).substring(7));
       }
 
       _jquery2.default.ajax({
@@ -6148,7 +6148,6 @@ var SourceServerVector = exports.SourceServerVector = function (_ol$source$Vecto
           _Debug.Debug.error('Getting Feature resource failed with url ' + url);
           _this2.dispatchEvent('vectorloaderror');
         },
-        cache: this.cache_ && !this.localised_,
         headers: this.localiser_ ? {
           'Accept-Language': this.localiser_.getCurrentLang()
         } : {}
@@ -12056,6 +12055,8 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 var _xssprotection = __webpack_require__(94);
 
+var _Debug = __webpack_require__(12);
+
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
 var Query = exports.Query = function () {
@@ -12101,9 +12102,25 @@ var Query = exports.Query = function () {
     }
   }
 
-  // some helper functions to be used in the parameter definitions
-
   _createClass(Query, [{
+    key: 'addKey',
+    value: function addKey(key) {
+      if (this.parameterKeys_.indexOf(key) > -1) {
+        _Debug.Debug.error('Key is already in use.');
+      } else if (key.toLowerCase() !== key) {
+        _Debug.Debug.error('Key should be lowercase.');
+      }
+
+      var queryString = window.location.search;
+      var match = queryString.match(new RegExp(key + '=(.*?)(&|$)', 'i'));
+      if (match) {
+        this.queryValues_[key] = match[1].split(',');
+      }
+    }
+
+    // some helper functions to be used in the parameter definitions
+
+  }, {
     key: 'isSet',
     value: function isSet(key) {
       return this.queryValues_.hasOwnProperty(key);
@@ -12157,8 +12174,6 @@ var _createClass = function () { function defineProperties(target, props) { for 
 var _jquery = __webpack_require__(1);
 
 var _jquery2 = _interopRequireDefault(_jquery);
-
-var _Debug = __webpack_require__(12);
 
 var _Query = __webpack_require__(198);
 
@@ -12325,34 +12340,22 @@ var URLAPI = exports.URLAPI = function () {
   _createClass(URLAPI, [{
     key: 'addApiLayer',
     value: function addApiLayer(layer, key) {
-      if (this.parameterKeys_.indexOf(key) > -1) {
-        _Debug.Debug.error('Key is already in use.');
-      } else if (key.toLowerCase() !== key) {
-        _Debug.Debug.error('Key should be lowercase.');
-      } else {
-        var queryString = window.location.search;
-        var match = queryString.match(new RegExp(key + '=(.*?)(&|$)', 'i'));
-        if (match) {
-          var value = match[1];
-          _Debug.Debug.info(value);
-          this.queryValues[key] = value.split(',');
-        }
+      this.query_.addKey(key);
 
-        // get
-        var get = function get() {
-          var obj = {};
-          obj[key] = layer.getSource().getQueryValues();
-          return obj;
-        };
+      // get
+      var get = function get() {
+        var obj = {};
+        obj[key] = layer.getSource().getQueryValues();
+        return obj;
+      };
 
-        this.parameterGetters_.push(get);
-        this.initialValues_[key] = get()[key];
+      this.parameterGetters_.push(get);
+      this.initialValues_[key] = get()[key];
 
-        // set
-        if (this.queryValues.hasOwnProperty(key)) {
-          layer.getSource().setQueryValues(this.queryValues[key]);
-          layer.setVisible(true);
-        }
+      // set
+      if (this.query_.isSet(key)) {
+        layer.getSource().setQueryValues(this.query_.getSanitizedVal(key));
+        layer.setVisible(true);
       }
     }
 
@@ -12365,7 +12368,7 @@ var URLAPI = exports.URLAPI = function () {
   }, {
     key: 'get',
     value: function get(key) {
-      return this.queryValues[key];
+      return this.query_.getSanitizedVal(key);
     }
 
     /**
@@ -13051,6 +13054,10 @@ var searchParam = exports.searchParam = {
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
+exports.visibleLayersParam = undefined;
+
+var _Debug = __webpack_require__(12);
+
 var visibleLayersParam = exports.visibleLayersParam = {
   keys: ['vislay'],
   setEvent: 'afterConfiguring',
@@ -13063,6 +13070,9 @@ var visibleLayersParam = exports.visibleLayersParam = {
         var layer = map.getLayerGroup().findLayer(function (l) {
           return l.get('id') !== undefined && l.get('id').toString() === _id[0];
         });
+        if (layer === undefined) {
+          _Debug.Debug.warn('it was tried to set a layer visible via urlapi that does not exist: id = ' + _id[0]);
+        }
         if (layer.getSource && layer.getSource().updateParams) {
           layer.getSource().updateParams({ LAYERS: _id.slice(1) });
         }
@@ -19261,17 +19271,19 @@ var ArrowButtons = exports.ArrowButtons = function (_Control) {
 
         var oldPosition = view.getCenter();
 
+        // adding the delta to the actual center
+
+        var constrainedCenter = view.constrainCenter([oldPosition[0] + delta[0], oldPosition[1] + delta[1]]);
+
         if (this.animated_) {
           // creating a pan-animation
-          var pan = _openlayers2.default.animation.pan({
-            duration: this.animationDuration_,
-            source: oldPosition
+          view.animate({
+            center: constrainedCenter,
+            duration: this.animationDuration_
           });
-          map.beforeRender(pan);
+        } else {
+          view.setCenter(constrainedCenter);
         }
-
-        // adding the delta to the actual center
-        view.setCenter(view.constrainCenter([oldPosition[0] + delta[0], oldPosition[1] + delta[1]]));
       }
       (0, _jquery2.default)(map.getViewport()).focus();
     }
@@ -19646,10 +19658,7 @@ var GeolocationButton = exports.GeolocationButton = function (_Control) {
     });
 
     _this.layer_ = null;
-    var geolocationOptions = {};
-    if (options.hasOwnProperty('tracking')) {
-      geolocationOptions.tracking = options.tracking;
-    }
+    var geolocationOptions = { tracking: false };
     if (options.hasOwnProperty('trackingOptions')) {
       geolocationOptions.trackingOptions = options.trackingOptions;
     }
@@ -19692,7 +19701,6 @@ var GeolocationButton = exports.GeolocationButton = function (_Control) {
       } else {
         this.getMap().getLayers().remove(this.layer_);
       }
-
       _get(GeolocationButton.prototype.__proto__ || Object.getPrototypeOf(GeolocationButton.prototype), 'setMap', this).call(this, map);
     }
 
@@ -19716,44 +19724,51 @@ var GeolocationButton = exports.GeolocationButton = function (_Control) {
     value: function setActive(active) {
       var _this2 = this;
 
+      var that = this;
+      var changeHandler_ = function changeHandler_(options) {
+        var source = that.layer_.getSource();
+        source.clear();
+        var position = that.geolocation_.getPosition();
+        source.addFeature(new _openlayers2.default.Feature({ geometry: new _openlayers2.default.geom.Point(position) }));
+
+        var circle = that.geolocation_.getAccuracyGeometry();
+        source.addFeature(new _openlayers2.default.Feature({ geometry: circle }));
+        if (options.hasOwnProperty('initialRun') && options.initialRun) {
+          that.getMap().get('move').toExtent(circle.getExtent(), { animated: _this2.animated_, maxZoom: that.maxZoom_ });
+        } else {
+          if (that.animated_) {
+            that.getMap().getView().animate({ 'center': position });
+          } else {
+            that.getMap().getView().setCenter(position);
+          }
+        }
+        if (options.hasOwnProperty('stopTracking')) {
+          that.geolocation_.setTracking(!options.stopTracking);
+        }
+      };
       var oldValue = this.active_;
       if (oldValue !== active) {
         this.get$Element().toggleClass(this.classNamePushed_, active);
-
         if (active) {
-          var source = this.layer_.getSource();
-
-          this.geolocation_.once(['change:accuracyGeometry'], function () {
-            source.clear();
-            var position = _this2.geolocation_.getPosition();
-            source.addFeature(new _openlayers2.default.Feature({ geometry: new _openlayers2.default.geom.Point(position) }));
-
-            var circle = _this2.geolocation_.getAccuracyGeometry();
-            source.addFeature(new _openlayers2.default.Feature({ geometry: circle }));
-            _this2.getMap().get('move').toExtent(circle.getExtent(), { animated: _this2.animated_, maxZoom: _this2.maxZoom_ });
-          });
-
-          this.changeHandler_ = function () {
-            source.clear();
-            var position = _this2.geolocation_.getPosition();
-            source.addFeature(new _openlayers2.default.Feature({ geometry: new _openlayers2.default.geom.Point(position) }));
-
-            var circle = _this2.geolocation_.getAccuracyGeometry();
-            source.addFeature(new _openlayers2.default.Feature({ geometry: circle }));
-            if (_this2.animated_) {
-              var pan = _openlayers2.default.animation.pan({ source: _this2.getMap().getView().getCenter() });
-              _this2.getMap().beforeRender(pan);
+          this.geolocation_.setTracking(true);
+          var position = this.geolocation_.getPosition();
+          if (position) {
+            changeHandler_({ 'stopTracking': !this.followLocation_, 'initialRun': true });
+            if (this.followLocation_) {
+              this.geolocation_.on('change', changeHandler_);
             }
-            _this2.getMap().getView().setCenter(position);
-          };
-          if (this.followLocation_) {
-            this.geolocation_.on(['change:accuracy', 'change:accuracyGeometry', 'change:position'], this.changeHandler_);
+          } else {
+            this.geolocation_.once('change', function () {
+              changeHandler_({ 'stopTracking': !_this2.followLocation_, 'initialRun': true });
+              if (_this2.followLocation_) {
+                _this2.geolocation_.on('change', changeHandler_);
+              }
+            });
           }
         } else {
-          if (this.followLocation_) {
-            this.geolocation_.un(['change:accuracy', 'change:accuracyGeometry', 'change:position'], this.changeHandler_);
-          }
           this.layer_.getSource().clear();
+          this.geolocation_.un('change', changeHandler_);
+          this.geolocation_.setTracking(false);
         }
 
         this.active_ = active;
