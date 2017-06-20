@@ -1,7 +1,7 @@
 import { createMapInternal } from 'guide4you/src/main'
 
-import defaultClientConf from 'mustache-eval-loader?name=conf/[name].[ext]!./client.commented.json'
-import defaultLayerConf from 'mustache-eval-loader?name=conf/[name].[ext]!guide4you/conf/layers.commented.json'
+import defaultClientConf from 'mustache-eval-loader?name=conf/[name].[ext]!../client.commented.json'
+import defaultLayerConf from 'mustache-eval-loader?name=conf/[name].[ext]!guide4you/conf/simple/layers.commented.json'
 
 import 'tojson-file-loader?name=files/[name]!files/helptext.json.js'
 

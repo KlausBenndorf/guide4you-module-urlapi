@@ -1,4 +1,5 @@
 import {filterText} from 'guide4you/src/xssprotection'
+import {Debug} from 'guide4you/src/Debug'
 
 export class Query {
   constructor (possibleKeys, excluded) {
@@ -11,20 +12,6 @@ export class Query {
     this.parameterKeys_ = possibleKeys
 
     this.excluded_ = excluded
-
-    // some helper functions to be used in the parameter definitions
-
-    this.isSet = key => this.queryValues_.hasOwnProperty(key)
-
-    this.getSanitizedVal = key => filterText(this.queryValues_[key])
-
-    this.getInjectUnsafeVal = key => this.queryValues_[key]
-
-    this.isExcluded = key => (this.excluded_.indexOf(key) > -1)
-
-    this.isTrue = key => (this.isSet(key) && !!JSON.parse(this.getSanitizedVal(key)))
-
-    this.getArray = key => this.queryValues_[ key ].split(',')
 
     let keyValuePair
     let queryString = window.location.search
@@ -52,5 +39,45 @@ export class Query {
         }
       }
     }
+  }
+
+  addKey (key) {
+    if (this.parameterKeys_.indexOf(key) > -1) {
+      Debug.error('Key is already in use.')
+    } else if (key.toLowerCase() !== key) {
+      Debug.error('Key should be lowercase.')
+    }
+
+    let queryString = window.location.search
+    let match = queryString.match(new RegExp(key + '=(.*?)(&|$)', 'i'))
+    if (match) {
+      this.queryValues_[key] = match[1].split(',')
+    }
+  }
+
+  // some helper functions to be used in the parameter definitions
+
+  isSet (key) {
+    return this.queryValues_.hasOwnProperty(key)
+  }
+
+  getSanitizedVal (key) {
+    return filterText(this.queryValues_[key])
+  }
+
+  getInjectUnsafeVal (key) {
+    return this.queryValues_[key]
+  }
+
+  isExcluded (key) {
+    return (this.excluded_.indexOf(key) > -1)
+  }
+
+  isTrue (key) {
+    return (this.isSet(key) && !!JSON.parse(this.getSanitizedVal(key)))
+  }
+
+  getArray (key) {
+    return this.queryValues_[ key ].split(',')
   }
 }

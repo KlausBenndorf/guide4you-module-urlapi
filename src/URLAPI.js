@@ -1,6 +1,5 @@
 import $ from 'jquery'
 
-import {Debug} from 'guide4you/src/Debug'
 import { Query } from './Query'
 
 import { availableLayersParam } from './handling/availableLayers'
@@ -132,34 +131,22 @@ export class URLAPI {
    * @param {string} key the key this layer should be controlled by
    */
   addApiLayer (layer, key) {
-    if (this.parameterKeys_.indexOf(key) > -1) {
-      Debug.error('Key is already in use.')
-    } else if (key.toLowerCase() !== key) {
-      Debug.error('Key should be lowercase.')
-    } else {
-      let queryString = window.location.search
-      let match = queryString.match(new RegExp(key + '=(.*?)(&|$)', 'i'))
-      if (match) {
-        let value = match[ 1 ]
-        Debug.info(value)
-        this.queryValues[ key ] = value.split(',')
-      }
+    this.query_.addKey(key)
 
-      // get
-      let get = () => {
-        let obj = {}
-        obj[ key ] = layer.getSource().getQueryValues()
-        return obj
-      }
+    // get
+    let get = () => {
+      let obj = {}
+      obj[ key ] = layer.getSource().getQueryValues()
+      return obj
+    }
 
-      this.parameterGetters_.push(get)
-      this.initialValues_[ key ] = get()[ key ]
+    this.parameterGetters_.push(get)
+    this.initialValues_[ key ] = get()[ key ]
 
-      // set
-      if (this.queryValues.hasOwnProperty(key)) {
-        layer.getSource().setQueryValues(this.queryValues[ key ])
-        layer.setVisible(true)
-      }
+    // set
+    if (this.query_.isSet(key)) {
+      layer.getSource().setQueryValues(this.query_.getSanitizedVal(key))
+      layer.setVisible(true)
     }
   }
 
@@ -169,7 +156,7 @@ export class URLAPI {
    * @returns {string}
    */
   get (key) {
-    return this.queryValues[ key ]
+    return this.query_.getSanitizedVal(key)
   }
 
   /**
