@@ -175,7 +175,6 @@ export class URLAPI {
     }
   }
 
-  /**
   getCurrentParameters () {
     let values = {}
 
@@ -220,6 +219,8 @@ export class URLAPI {
         }
       }
     }
+
+    return values
   }
 
   /**
