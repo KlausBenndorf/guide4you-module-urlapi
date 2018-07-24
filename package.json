@@ -26,7 +26,7 @@
     "openlayers": "github:KlausBenndorf/ol3#g4u3_v5.0.2"
   },
   "devDependencies": {
-    "concurrently": "3.6.0",
+    "concurrently": "3.6.1",
     "esdoc": "^1.0.4",
     "esdoc-standard-plugin": "^1.0.0",
     "eslint": "^5.1.0",
